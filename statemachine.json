@@ -1,0 +1,74 @@
+{
+    "Comment": "A simple state machine to choose a color",
+    "StartAt": "StartState",
+    "States": {
+      "StartState": {
+        "Type": "Pass",
+        "Next": "Waitfor3sec"
+      },
+      "Waitfor3sec": {
+        "Type": "Wait",
+        "Seconds": 3,
+        "Next": "OperatorCheck"
+      },
+      "OperatorCheck": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.operator",
+            "StringEquals": "+",
+            "Next": "Addition"
+          },
+          {
+            "Variable": "$.operator",
+            "StringEquals": "-",
+            "Next": "Subtraction"
+          },
+          {
+            "Variable": "$.operator",
+            "StringEquals": "*",
+            "Next": "Multiplication"
+          }
+        ],
+        "Default": "Invalidoperator"
+      },
+      "Invalidoperator": {
+        "Type": "Fail",
+        "Error": "Invalid operator"
+      },
+      "Addition": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:657907747545:function:chetanpostgres-dev-insert",
+        "Parameters": {
+          "Payload": {
+            "operands.$": "$.operands"
+          }
+        },
+        "Next": "EndState"
+      },
+      "Subtraction": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:657907747545:function:chetanpostgres-dev-select",
+        "Parameters": {
+          "Payload": {
+            "operands.$": "$.operands"
+          }
+        },
+        "Next": "EndState"
+      },
+      "Multiplication": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:657907747545:function:chetanpostgres-dev-update",
+        "Parameters": {
+          "Payload": {
+            "operands.$": "$.operands"
+          }
+        },
+        "Next": "EndState"
+      },
+      "EndState": {
+        "Type": "Pass",
+        "End": true
+      }
+    }
+  }
